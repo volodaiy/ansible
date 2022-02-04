@@ -1,0 +1,32 @@
+---
+- name: Removing the web server
+  hosts: nodes
+  remote_user: ansible
+
+  tasks:
+  - name: Stop httpd service
+    service:
+      name: httpd
+      state: stopped
+
+  - name: Remove the httpd package
+    package:
+      name: httpd
+      state: absent
+
+  - name: Delete index.html
+    file:
+      state: absent
+      path: "/var/www/html/index.html"
+
+  - name: Close http port
+    firewalld:
+      service: http
+      permanent: true
+      state: disabled
+
+  - name: Restart service firewalld
+    service:
+      name: firewalld
+      state: restarted
+...

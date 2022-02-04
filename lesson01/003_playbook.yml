@@ -1,0 +1,28 @@
+---
+- name: Edditing grub files
+  hosts: nodes
+  remote_user: ansible
+
+  tasks:
+  - name: Eddit grub net.ifnames
+    lineinfile:
+      state: present
+      dest: /etc/default/grub
+      backrefs: yes
+      regexp: '^(GRUB_CMDLINE_LINUX=(?!.* net.ifnames)\"[^\"]+)(\".*)'
+      line: '\1 net.ifnames=0\2'
+    register: grub_net_ifnames
+
+  - name: Eddit grub biosdevname
+    lineinfile:
+      state: present
+      dest: /etc/default/grub
+      backrefs: yes    
+      regexp: '^(GRUB_CMDLINE_LINUX=(?!.* biosdevname)\"[^\"]+)(\".*)'
+      line: '\1 biosdevname=0\2'
+    register: grub_biosdevname
+
+  - name: Write grub configuration file
+    command: grub2-mkconfig
+    when: (grub_net_ifnames.changed) or (grub_biosdevname.changed)
+...
