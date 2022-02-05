@@ -1,0 +1,19 @@
+---
+- name: create users using a loop
+  hosts: nodes
+  vars_files:
+    - vars/secret.yml
+  tasks:
+  - name: create users
+    user:
+      name: "{{ item.key }}"
+      home: /home/{{ item.key }}
+      shell: /bin/bash
+      comment: '{{ item.key }}@example.com'
+      state: present
+      password: "{{ item.value | password_hash('sha512') }}"
+      update_password: on_create
+    # no_log: True
+    with_dict:
+    - "{{ users }}"
+...
