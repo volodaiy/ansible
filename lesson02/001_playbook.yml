@@ -6,14 +6,18 @@
   tasks:
   - name: create users
     user:
-      name: "{{ item.key }}"
-      home: /home/{{ item.key }}
-      shell: /bin/bash
-      comment: '{{ item.key }}@example.com'
+      name: "{{ item.name }}"
+      create_home: yes
+      comment: '{{ item.name }}@example.com'
       state: present
-      password: "{{ item.value | password_hash('sha512') }}"
+      password: "{{ item.password | password_hash('sha512') }}"
       update_password: on_create
     no_log: True
-    with_dict:
-    - "{{ users }}"
+    loop:
+      - name: Alice
+        password: "{{ users.alice_pwhash }}"
+      - name: Bob
+        password: "{{ users.bob_pwhash }}"
+      - name: Carol
+        password: "{{ users.carol_pwhash }}"
 ...
