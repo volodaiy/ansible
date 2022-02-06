@@ -9,20 +9,24 @@
       state: present
       dest: /etc/default/grub
       backrefs: yes
-      regexp: '^(GRUB_CMDLINE_LINUX=(?!.* net.ifnames)\"[^\"]+)(\".*)'
-      line: '\1 net.ifnames=0\2'
-    register: grub_net_ifnames
+      regexp: '^(GRUB_CMDLINE_LINUX=(?:(?![" ]{{ option | regex_escape }}=).)*)(?:[" ]{{ option | regex_escape }}=\S+)?(.*")$'
+      line: '\1 {{ option }}={{ value }}\2'
+    vars:
+      option: net.ifnames
+      value: 0
 
   - name: Eddit grub biosdevname
     lineinfile:
       state: present
       dest: /etc/default/grub
       backrefs: yes    
-      regexp: '^(GRUB_CMDLINE_LINUX=(?!.* biosdevname)\"[^\"]+)(\".*)'
-      line: '\1 biosdevname=0\2'
-    register: grub_biosdevname
+      regexp: '^(GRUB_CMDLINE_LINUX=(?:(?![" ]{{ option | regex_escape }}=).)*)(?:[" ]{{ option | regex_escape }}=\S+)?(.*")$'
+      line: '\1 {{ option }}={{ value }}\2'
+    vars:
+      option: biosdevname
+      value: 0
 
   - name: Write grub configuration file
-    command: grub2-mkconfig
-    when: (grub_net_ifnames.changed) or (grub_biosdevname.changed)
+    command: grub2-mkconfig -o /etc/default/grub.cfg
+  #   when: (grub_net_ifnames.changed) or (grub_biosdevname.changed)
 ...
