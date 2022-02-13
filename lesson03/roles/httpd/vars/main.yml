@@ -1,0 +1,6 @@
+---
+# vars file for install_httpd
+
+services:
+  web_service: httpd
+  fw: firewalld

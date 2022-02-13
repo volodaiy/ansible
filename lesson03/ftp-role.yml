@@ -1,0 +1,5 @@
+---
+- name: Using ftp-role  
+  hosts: nodes
+  roles:
+    - role: ftp

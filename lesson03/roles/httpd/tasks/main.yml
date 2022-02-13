@@ -1,0 +1,28 @@
+---
+# tasks file for install_httpd
+
+- name: Install services
+  yum:
+    name: "{{ item.value }}"
+    state: present
+  with_dict: "{{ services }}"
+  when: ansible_facts.os_family == "RedHat"
+
+- name: create index.html
+  template:
+    src: index.j2
+    dest: /var/www/html/index.html
+
+- name: start services
+  ansible.builtin.service:
+    name: "{{ item.value }}"
+    state: started
+  with_dict: "{{ services }}"
+
+- name: open port http
+  firewalld:
+    service: http
+    permanent: true
+    state: enabled
+  notify:
+  - restart firewalld

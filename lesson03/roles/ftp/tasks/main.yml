@@ -1,0 +1,71 @@
+---
+# tasks file for install_httpd
+
+- name: Install services
+  yum:
+    name: "{{ item.value }}"
+    state: present
+  with_dict: "{{ services }}"
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Start services
+  ansible.builtin.service:
+    name: "{{ item.value }}"
+    state: started
+    enabled: yes
+  with_dict: "{{ services }}"
+
+- name: Open port vsftpd
+  firewalld:
+    port: "{{ item }}"
+    permanent: true
+    state: enabled
+  loop:
+    - "20-22/tcp"
+    - "40000-50000/tcp"
+  notify:
+  - restart firewalld
+
+- name: Configuring vsftpd
+  template:
+    src: vsftpd.conf.j2
+    dest: /etc/vsftpd/vsftpd.conf
+    owner: root
+    group: root
+    mode: "0644"
+  with_dict: "{{ config }}"
+  notify: restart vsftpd
+
+- name: install policycoreutils
+  yum:
+    name: policycoreutils-python-utils
+    state: present
+
+- name: Create upload directory
+  ansible.builtin.file:
+    path: /var/ftp/pub/upload
+    state: directory
+    owner: ftp
+    group: ftp
+    mode: '0777'
+
+# - name: Change file ownership, group and permissions
+#   ansible.builtin.file:
+#     path: /var/ftp/pub/
+#     owner: ftp
+#     group: ftp
+#     mode: '0644'
+
+- name: config selinux
+  seboolean:
+    name: ftpd_anon_write
+    state: yes
+    persistent: yes
+
+- name: allow write to upload folder
+  sefcontext:
+    target: '/var/ftp/pub/upload(/.*)?'
+    setype: public_content_rw_t
+    state: present
+- name: apply file context to upload folder
+  command: restorecon -FRv /var/ftp/pub/upload
