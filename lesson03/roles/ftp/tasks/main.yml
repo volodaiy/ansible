@@ -49,13 +49,6 @@
     group: ftp
     mode: '0777'
 
-# - name: Change file ownership, group and permissions
-#   ansible.builtin.file:
-#     path: /var/ftp/pub/
-#     owner: ftp
-#     group: ftp
-#     mode: '0644'
-
 - name: config selinux
   seboolean:
     name: ftpd_anon_write
